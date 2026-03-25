@@ -23,20 +23,22 @@ export const STATUS_PRODUTO = [
 export type StatusProduto = typeof STATUS_PRODUTO[number];
 export type CategoriaProduto = typeof CATEGORIA_PRODUTO[number];
 
+
 export interface Produto {
     id: string;
     nome: string;
     preco: number;
     categoria: CategoriaProduto;
-    StatusProduto: StatusProduto;
+    status: StatusProduto; 
+    idLista: string;   
 }
 
 export interface ProdutoRequest {
     nome: string;
     preco: number;
     categoria: CategoriaProduto;
-    StatusProduto: StatusProduto;
-    idLista: string;
+    status: StatusProduto;
+    idLista: string;      
 }
 
 
