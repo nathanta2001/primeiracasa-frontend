@@ -28,6 +28,17 @@ export const itemCasaService = {
         return data;
     },
 
+    atualizarFoto: async (id: string, fotoBase64: string): Promise<ItemCasa> => {
+        await api.patch(`/itens/${id}/foto`, { foto: fotoBase64 }, {
+            headers: {
+                'Content-Type': 'text/plain'
+            }
+        });
+        const { data } = await api.get<ItemCasa>(`/itens/${id}`);
+        return data;
+
+    },
+
     deletar: async (id: string): Promise<void> => {
         await api.delete(`/itens/${id}`);
     }
