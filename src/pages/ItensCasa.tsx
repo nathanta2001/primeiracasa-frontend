@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import {
     Card, Row, Col, Button, Tag, Typography, Spin, Select,
-    Input, Switch, Space, Popconfirm, message, Empty
+    Input, Space, Popconfirm, message, Empty
 } from "antd";
 import { 
     DeleteOutlined, EditOutlined, PlusOutlined, 
-    FilterOutlined, CheckOutlined 
+    FilterOutlined 
 } from "@ant-design/icons";
 import { useNavigate } from 'react-router-dom';
 import { itemCasaService } from '../services/itemCasaService';

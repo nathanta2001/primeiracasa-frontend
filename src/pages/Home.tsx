@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Card, Row, Col, Statistic, Button, List, Tag, Typography, Spin } from 'antd';
-import { ShoppingOutlined, HomeOutlined, CheckCircleOutlined, DollarOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import { ShoppingOutlined, HomeOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { itemCasaService } from '../services/itemCasaService';
 import { type ItemCasa } from '../types/ItemCasa';
