@@ -1,4 +1,4 @@
-import { BrowserRouter, Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from 'antd';
 import Home from '../pages/Home';
 import ItensCasa from '../pages/ItensCasa';
