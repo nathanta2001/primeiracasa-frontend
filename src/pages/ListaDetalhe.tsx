@@ -83,19 +83,19 @@ const ListaDetalhe = () => {
     };
 
 
-    // precisa de um botão pra isso aq tbm
-    const handleUploadFoto = async (arquivo: File) => {
-        if (!arquivo) return;
+    // // precisa de um botão pra isso aq tbm
+    // const handleUploadFoto = async (arquivo: File) => {
+    //     if (!arquivo) return;
         
-        // Convertendo para Base64 para salvar no banco
-        const reader = new FileReader();
-        reader.readAsDataURL(arquivo);
-        reader.onload = () => {
-            const base64 = reader.result;
-            //produtoService.salvarFoto(id!, base64 as string);
-            console.log("Foto pronta para o Java:", base64);
-        };
-        };
+    //     // Convertendo para Base64 para salvar no banco
+    //     const reader = new FileReader();
+    //     reader.readAsDataURL(arquivo);
+    //     reader.onload = () => {
+    //         const base64 = reader.result;
+    //         //produtoService.salvarFoto(id!, base64 as string);
+    //         console.log("Foto pronta para o Java:", base64);
+    //     };
+    //     };
 
     const corStatus = (status: string) => {
         const cores: Record<string, string> = {

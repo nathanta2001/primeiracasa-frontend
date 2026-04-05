@@ -60,40 +60,40 @@ const Listas = () => {
         form.resetFields();
     };
 
-    //falta adicionar um botão pra isso
-    const compartilharLista = async (lista: Lista) => {
-        if (navigator.share) {
-            try {
-            await navigator.share({
-                title: `Lista: ${lista.nome}`,
-                text: 'Confira os itens que adicionei na nossa lista!',
-                url: window.location.href, // Link da lista atual
-            });
-            } catch (err) {
-            console.error('Erro ao compartilhar', err);
-            }
-        }
-    };
+    // //falta adicionar um botão pra isso
+    // const compartilharLista = async (lista: Lista) => {
+    //     if (navigator.share) {
+    //         try {
+    //         await navigator.share({
+    //             title: `Lista: ${lista.nome}`,
+    //             text: 'Confira os itens que adicionei na nossa lista!',
+    //             url: window.location.href, // Link da lista atual
+    //         });
+    //         } catch (err) {
+    //         console.error('Erro ao compartilhar', err);
+    //         }
+    //     }
+    // };
 
-    // função genérica de compartilhamento, pode ser usada para compartilhar qualquer coisa
-    // talvez colocar ela como componente separado e usar em outros lugares depois
-    // não possui design nem aparece na interface 
-    // fazer o design dela depois
-    const handleCompartilhar = async (titulo: string, texto: string) => {
-        if (navigator.share) {
-            try {
-                await navigator.share({
-                    title: titulo,
-                    text: texto,
-                    url: window.location.href,
-                });
-            } catch (err) {
-                message.error('Erro ao compartilhar');
-            } 
-        } else {
-            message.warning('Compartilhamento não suportado neste navegador');
-        }
-    }
+    // // função genérica de compartilhamento, pode ser usada para compartilhar qualquer coisa
+    // // talvez colocar ela como componente separado e usar em outros lugares depois
+    // // não possui design nem aparece na interface 
+    // // fazer o design dela depois
+    // const handleCompartilhar = async (titulo: string, texto: string) => {
+    //     if (navigator.share) {
+    //         try {
+    //             await navigator.share({
+    //                 title: titulo,
+    //                 text: texto,
+    //                 url: window.location.href,
+    //             });
+    //         } catch (err) {
+    //             message.error('Erro ao compartilhar');
+    //         } 
+    //     } else {
+    //         message.warning('Compartilhamento não suportado neste navegador');
+    //     }
+    // }
 
     const onFinish = async (values: ListaRequest) => {
         try {
