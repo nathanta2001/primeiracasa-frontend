@@ -1,6 +1,7 @@
 import { Menu } from 'antd';
 import { HomeOutlined, AppstoreOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { NotificationToggle } from './NotificationToggle';
 
 const Navbar = () => {
 
@@ -30,13 +31,17 @@ const Navbar = () => {
     ]
 
     return (
-        <Menu
-            mode="horizontal"
-            selectedKeys={[location.pathname]}
-            items={itens}
-            onClick={({ key }) => navigate(key)}
-            style={{ position: 'sticky', top: 0, zIndex: 1 }}
-        />
+        <div style={{ display: 'flex', alignItems: 'center', background: '#001529', paddingRight: '20px' }}>
+            <Menu
+                theme="dark"
+                mode="horizontal"
+                selectedKeys={[location.pathname]}
+                items={itens}
+                onClick={({ key }) => navigate(key)}
+                style={{ flex: 1, position: 'sticky', top: 0, zIndex: 1 }}
+            />
+            <NotificationToggle />
+        </div>
     );
 
 }
