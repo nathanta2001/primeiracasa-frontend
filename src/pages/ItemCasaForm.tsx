@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { itemCasaService } from "../services/itemCasaService";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { COMODOS_ITEM, NECESSIDADES_ITEM, TIPOS_ITEM } from "../types/ItemCasa";
+import { ImageCapture } from "../components/ImageCapture";
 
 
 
@@ -11,7 +12,7 @@ const { Title } = Typography;
 const { Option } = Select;
 
 const ItemCasaForm = () => {
-    
+
     const navigate = useNavigate();
 
     const { id } = useParams();
@@ -54,7 +55,7 @@ const ItemCasaForm = () => {
 
             setLoading
 
-            if(isEdicao) {
+            if (isEdicao) {
                 await itemCasaService.atualizar(id!, values);
                 message.success("Item atualizado com sucesso!");
             } else {
@@ -70,7 +71,7 @@ const ItemCasaForm = () => {
             setLoading(false);
         }
     };
-            
+
     return (
         <div style={{ maxWidth: 600, margin: '0 auto' }}>
 
@@ -125,10 +126,8 @@ const ItemCasaForm = () => {
                             precision define 2 casas decimais */}
                         <InputNumber
                             style={{ width: '100%' }}
-                            min={0.01}
-                            precision={2}
-                            placeholder="0,00"
-                            prefix="R$"
+                            formatter={value => `R$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                            parser={value => value!.replace(/\R\$\s?|(,*)/g, '')}
                         />
                     </Form.Item>
 
@@ -183,6 +182,13 @@ const ItemCasaForm = () => {
                                 Cancelar
                             </Button>
                         </Space>
+                    </Form.Item>
+
+                    <Form.Item name="fotoBase64">
+                        <ImageCapture
+                            value={form.getFieldValue('fotoBase64')}
+                            onChange={(val) => form.setFieldsValue({ fotoBase64: val })}
+                        />
                     </Form.Item>
 
                 </Form>
