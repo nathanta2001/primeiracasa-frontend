@@ -31,6 +31,7 @@ export interface Produto {
     categoria: CategoriaProduto;
     status: StatusProduto; 
     idLista: string;   
+    fotoBase64?: string; // Campo opcional para armazenar a foto em Base64
 }
 
 export interface ProdutoRequest {
@@ -39,6 +40,7 @@ export interface ProdutoRequest {
     categoria: CategoriaProduto;
     status: StatusProduto;
     idLista: string;      
+    fotoBase64?: string; // Campo opcional para armazenar a foto em Base64
 }
 
 

@@ -36,6 +36,7 @@ export interface ItemCasa {
     tipo: TipoItem;
     necessidade: NecessidadeItem;
     comodo: ComodoItem;
+    fotoBase64?: string; // Campo opcional para armazenar a foto em Base64
 }
 
 export interface ItemCasaRequest {
@@ -44,6 +45,7 @@ export interface ItemCasaRequest {
     tipo: TipoItem;
     necessidade: NecessidadeItem;
     comodo: ComodoItem;
+    fotoBase64?: string; // Campo opcional para armazenar a foto em Base64
 }
 
 export interface ItemCasaFiltros {

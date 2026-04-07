@@ -119,6 +119,12 @@ const Listas = () => {
     const handleDeletar = async (id: string) => {
         try {
             await listaService.deletar(id);
+
+            // vibra por 200ms
+            if ("vibrate" in navigator) {
+                navigator.vibrate(200); 
+            }
+            
             message.success('Lista deletada!');
             carregarListas();
         } catch (error) {

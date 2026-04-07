@@ -1,18 +1,22 @@
 import { useEffect, useState } from 'react';
 import {
     Card, Button, Typography, Spin, Space,
-    Popconfirm, message, Empty, Tag, List,
+    Popconfirm, message, Empty, List,
     Modal, Form, Input, Select,
     Row,
-    Col
+    Col,
+    Image
 } from 'antd';
-import { ArrowLeftOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, PlusOutlined, DeleteOutlined, EditOutlined, ShoppingOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { listaService } from '../services/listaService';
 import { produtoService } from '../services/produtoService';
 import { type Lista } from '../types/Lista';
 import { type Produto, type ProdutoRequest } from '../types/Produto';
 import { CATEGORIA_PRODUTO, STATUS_PRODUTO } from '../types/Produto';
+import { StatusTag } from '../components/StatusTag';
+import { ImageCapture } from '../components/ImageCapture';
+import { ProdutoCard } from '../components/ProdutoCard';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -27,6 +31,7 @@ const ListaDetalhe = () => {
     const [loading, setLoading] = useState(true);
     const [loadingSalvar, setLoadingSalvar] = useState(false);
     const [modalAberto, setModalAberto] = useState(false);
+    const [produtoSelecionado, setProdutoSelecionado] = useState<Produto | null>(null);
 
     useEffect(() => {
         carregarDados();
@@ -58,15 +63,24 @@ const ListaDetalhe = () => {
     const onFinish = async (values: Omit<ProdutoRequest, 'idLista'>) => {
         try {
             setLoadingSalvar(true);
-            // Omit<ProdutoRequest, 'idLista'> significa ProdutoRequest sem o campo idLista
-            // adicionamos o idLista aqui pois já sabemos qual é
-            await produtoService.criar({ ...values, idLista: id! });
-            message.success('Produto adicionado!');
+
+            if (produtoSelecionado) {
+                // Modo Edição
+                await produtoService.atualizar(produtoSelecionado.id, { ...values, idLista: id! });
+                message.success('Produto atualizado!');
+            } else {
+                // Modo Criação
+                await produtoService.criar({ ...values, idLista: id! });
+                message.success('Produto adicionado!');
+                new Notification("Produto Adicionado", { body: `O item ${values.nome} já está na sua lista!` });
+            }
+
             form.resetFields();
+            setProdutoSelecionado(null); // Limpa a seleção após salvar
             setModalAberto(false);
             carregarDados();
         } catch (error) {
-            message.error('Erro ao adicionar produto');
+            message.error('Erro ao salvar produto');
         } finally {
             setLoadingSalvar(false);
         }
@@ -75,6 +89,12 @@ const ListaDetalhe = () => {
     const handleDeletar = async (produtoId: string) => {
         try {
             await produtoService.deletar(produtoId);
+
+            // vibra por 200ms
+            if ("vibrate" in navigator) {
+                navigator.vibrate(200);
+            }
+
             message.success('Produto removido!');
             carregarDados();
         } catch (error) {
@@ -82,11 +102,22 @@ const ListaDetalhe = () => {
         }
     };
 
+    const abrirModalEdicao = (produto: Produto) => {
+        setProdutoSelecionado(produto);
+        form.setFieldsValue({
+            nome: produto.nome,
+            categoria: produto.categoria,
+            status: produto.status,
+            fotoBase64: produto.fotoBase64
+        });
+        setModalAberto(true);
+    };
+
 
     // // precisa de um botão pra isso aq tbm
     // const handleUploadFoto = async (arquivo: File) => {
     //     if (!arquivo) return;
-        
+
     //     // Convertendo para Base64 para salvar no banco
     //     const reader = new FileReader();
     //     reader.readAsDataURL(arquivo);
@@ -97,14 +128,6 @@ const ListaDetalhe = () => {
     //     };
     //     };
 
-    const corStatus = (status: string) => {
-        const cores: Record<string, string> = {
-            'DISPONIVEL': 'green',
-            'ESGOTADO': 'red',
-            'COMPRADO': 'blue'
-        };
-        return cores[status] ?? 'default';
-    };
 
     if (loading) {
         return (
@@ -159,7 +182,7 @@ const ListaDetalhe = () => {
             </Card>
 
             {/* Lista de produtos */}
-            {produtos.length === 0 ? (
+            {produtos.length === 0 && !loading ? (
                 <Empty description="Nenhum produto nesta lista">
                     <Button type="primary" onClick={() => setModalAberto(true)}>
                         Adicionar primeiro produto
@@ -168,37 +191,14 @@ const ListaDetalhe = () => {
             ) : (
                 <Card>
                     <List
-                        dataSource={produtos}
+                        dataSource={loading ? ([{}, {}, {}] as Produto[]) : produtos}
                         renderItem={(produto) => (
-                            <List.Item
-                                actions={[
-                                    <Popconfirm
-                                        key="deletar"
-                                        title="Remover produto?"
-                                        onConfirm={() => handleDeletar(produto.id)}
-                                        okText="Sim"
-                                        cancelText="Não"
-                                    >
-                                        <Button
-                                            danger
-                                            icon={<DeleteOutlined />}
-                                            size="small"
-                                        />
-                                    </Popconfirm>
-                                ]}
-                            >
-                                <List.Item.Meta
-                                    title={
-                                        <Space>
-                                            {produto.nome}
-                                            <Tag color={corStatus(produto.status)}>
-                                                {produto.status}
-                                            </Tag>
-                                        </Space>
-                                    }
-                                    description={produto.categoria}
-                                />
-                            </List.Item>
+                            <ProdutoCard
+                                produto={loading ? undefined : produto as Produto}
+                                loading={loading}
+                                onEdit={abrirModalEdicao}
+                                onDelete={handleDeletar}
+                            />
                         )}
                     />
                 </Card>
@@ -249,10 +249,6 @@ const ListaDetalhe = () => {
                         </Select>
                     </Form.Item>
 
-                    <Form.Item name="descricao" label="Descrição (opcional)">
-                        <Input.TextArea rows={2} />
-                    </Form.Item>
-
                     <Form.Item style={{ marginBottom: 0 }}>
                         <Space>
                             <Button
@@ -270,7 +266,16 @@ const ListaDetalhe = () => {
                             </Button>
                         </Space>
                     </Form.Item>
+
+                    <Form.Item label="Foto do Produto">
+                        <ImageCapture
+                            value={form.getFieldValue('fotoBase64')}
+                            onChange={(val) => form.setFieldsValue({ fotoBase64: val })}
+                        />
+                    </Form.Item>
+
                 </Form>
+
             </Modal>
         </div>
     );
