@@ -1,22 +1,21 @@
 import { useEffect, useState } from 'react';
 import {
     Card, Button, Typography, Spin, Space,
-    Popconfirm, message, Empty, List,
+    message, Empty, List,
     Modal, Form, Input, Select,
     Row,
     Col,
-    Image
 } from 'antd';
-import { ArrowLeftOutlined, PlusOutlined, DeleteOutlined, EditOutlined, ShoppingOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, PlusOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { listaService } from '../services/listaService';
 import { produtoService } from '../services/produtoService';
 import { type Lista } from '../types/Lista';
 import { type Produto, type ProdutoRequest } from '../types/Produto';
 import { CATEGORIA_PRODUTO, STATUS_PRODUTO } from '../types/Produto';
-import { StatusTag } from '../components/StatusTag';
 import { ImageCapture } from '../components/ImageCapture';
 import { ProdutoCard } from '../components/ProdutoCard';
+
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -67,12 +66,35 @@ const ListaDetalhe = () => {
             if (produtoSelecionado) {
                 // Modo Edição
                 await produtoService.atualizar(produtoSelecionado.id, { ...values, idLista: id! });
+                if (Notification.permission === 'granted') {
+                    navigator.serviceWorker.ready.then((registration) => {
+                        registration.showNotification("🛒 Produto Adicionado", {
+                            body: `${values.nome} foi salvo na lista ${lista?.nome}.`,
+                            icon: '/icon-192x192.png',
+                            badge: '/favicon.ico',
+                            vibrate: [200, 100, 200], 
+                            tag: 'novo-produto',
+                            renotify: true
+                        } as any);
+                    });
+                }
                 message.success('Produto atualizado!');
             } else {
                 // Modo Criação
                 await produtoService.criar({ ...values, idLista: id! });
                 message.success('Produto adicionado!');
-                new Notification("Produto Adicionado", { body: `O item ${values.nome} já está na sua lista!` });
+                if (Notification.permission === 'granted') {
+                    navigator.serviceWorker.ready.then((registration) => {
+                        registration.showNotification("🛒 Produto Adicionado", {
+                            body: `${values.nome} foi salvo na lista ${lista?.nome}.`,
+                            icon: '/icon-192x192.png',
+                            badge: '/favicon.ico',
+                            vibrate: [200, 100, 200], 
+                            tag: 'novo-produto',
+                            renotify: true
+                        } as any);
+                    });
+                }
             }
 
             form.resetFields();
