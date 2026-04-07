@@ -16,10 +16,11 @@ const isIOS = (): boolean => {
   return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as Window & { MSStream?: unknown }).MSStream;
 };
 
-function InstallPrompt(): JSX.Element | null {
+const InstallPrompt = (): JSX.Element | null => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showInstall, setShowInstall] = useState<boolean>(false);
   const [showIOSPrompt, setShowIOSPrompt] = useState<boolean>(false);
+  const [visible, setVisible] = useState(true); // vê se o usuário fechou o aviso
 
   useEffect(() => {
     // Se já está rodando como app instalado, não mostra nada
@@ -76,6 +77,11 @@ function InstallPrompt(): JSX.Element | null {
     setShowInstall(false);
   };
 
+  // controla se o usuário fechou manualmente ou não há o que mostrar
+  if (!visible || (!showInstall && !showIOSPrompt)) {
+    return null;
+  }
+
   // Don't render anything if we shouldn't show the install button
   if (!showInstall && !showIOSPrompt) {
     return null;
@@ -124,33 +130,28 @@ function InstallPrompt(): JSX.Element | null {
     );
   }
 
-  return (
-    <div style={{
-      position: 'fixed',
-      bottom: '20px',
-      right: '20px',
-      zIndex: 1000
-    }}>
-      <button
-        onClick={handleInstall}
-        style={{
-          backgroundColor: '#4CAF50',
-          color: 'white',
-          padding: '15px 30px',
-          border: 'none',
-          borderRadius: '25px',
-          fontSize: '16px',
-          cursor: 'pointer',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px'
-        }}
-      >
-        📱 Instalar App
-      </button>
-    </div>
-  );
-}
+  if (showInstall) {
+    return (
+      <div style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 1000, display: 'flex', gap: '8px' }}>
+        <button
+          onClick={handleInstall}
+          style={{
+            backgroundColor: '#4CAF50', color: 'white', padding: '12px 24px',
+            border: 'none', borderRadius: '25px', cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+          }}
+        >
+          📱 Instalar App
+        </button>
+        <button 
+          onClick={() => setVisible(false)}
+          style={{ backgroundColor: '#ccc', border: 'none', borderRadius: '50%', width: '30px', cursor: 'pointer' }}
+        >
+          ✕
+        </button>
+      </div>
+    );
+  }
 
+  return null;
+};
 export default InstallPrompt;

@@ -1,30 +1,21 @@
-function Offline() {
+import { Alert } from 'antd';
+import useOnlineStatus from '../hooks/useOnlineStatus';
+
+const Offline = () => {
+  const isOnline = useOnlineStatus();
+
+  // Se estiver online, o componente não renderiza nada
+  if (isOnline) return null;
+
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '100vh',
-      textAlign: 'center',
-      padding: '20px'
-    }}>
-      <h1>🔌 Modo Offline</h1>
-      <p>Por favor verifique sua conexão.</p>
-      <p>Algumas funcionalidades ainda estão disponiveis online!</p>
-      <button 
-        onClick={() => window.location.reload()}
-        style={{
-          marginTop: '20px',
-          padding: '10px 20px',
-          fontSize: '16px',
-          cursor: 'pointer'
-        }}
-      >
-        Try Again
-      </button>
-    </div>
+    <Alert
+      message="Você está offline. Algumas funcionalidades podem não funcionar."
+      type="warning"
+      banner
+      closable
+      style={{ textAlign: 'center', fontWeight: 'bold' }}
+    />
   );
-}
+};
 
 export default Offline;
