@@ -17,7 +17,11 @@ export default defineConfig({
               cacheName: 'api-cache',
               expiration: {
                 maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 // 1 dia
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+                // Only cache status codes 0 (CORS) and 200 (success)
               }
             }
           }
@@ -31,14 +35,16 @@ export default defineConfig({
         display: 'standalone', //  app nativo [cite: 56]
         icons: [
           {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
+            src: 'favicon.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+            purpose: 'any'
           },
           {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png'
+            src: 'icons.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+            purpose: 'maskable'
           }
         ]
       }

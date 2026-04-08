@@ -1,5 +1,5 @@
 import api from "./api";
-import { type ItemCasa, type ItemCasaFiltros, type ItemCasaRequest} from "../types/ItemCasa";
+import { type ItemCasa, type ItemCasaFiltros, type ItemCasaRequest } from "../types/ItemCasa";
 
 export const itemCasaService = {
 
@@ -29,14 +29,9 @@ export const itemCasaService = {
     },
 
     atualizarFoto: async (id: string, fotoBase64: string): Promise<ItemCasa> => {
-        await api.patch(`/itens/${id}/foto`, { foto: fotoBase64 }, {
-            headers: {
-                'Content-Type': 'text/plain'
-            }
-        });
+        await api.patch(`/itens/${id}/foto`, { foto: fotoBase64 }); 
         const { data } = await api.get<ItemCasa>(`/itens/${id}`);
         return data;
-
     },
 
     deletar: async (id: string): Promise<void> => {

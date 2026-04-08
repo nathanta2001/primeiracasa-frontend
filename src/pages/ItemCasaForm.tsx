@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { itemCasaService } from "../services/itemCasaService";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { COMODOS_ITEM, NECESSIDADES_ITEM, TIPOS_ITEM } from "../types/ItemCasa";
+import { ImageCapture } from "../components/ImageCapture";
 
 
 
@@ -11,7 +12,7 @@ const { Title } = Typography;
 const { Option } = Select;
 
 const ItemCasaForm = () => {
-    
+
     const navigate = useNavigate();
 
     const { id } = useParams();
@@ -42,35 +43,49 @@ const ItemCasaForm = () => {
             });
 
         } catch (error) {
-            console.error("Erro ao carregar item:", error);
+            message.error("Erro ao carregar item:");
             navigate("/itens");
         } finally {
             setLoadingDados(false);
         }
     };
 
-    const onFinish = async (values: any) => {
+    interface ItemCasaFormValues {
+        nome: string;
+        preco: number;
+        tipo: 'MOBILIA' | 'UTENSILIO' | 'ELETRODOMESTICO' | 'ELETRONICO';
+        necessidade: 'ESSENCIAL' | 'DESEJAVEL' | 'OPCIONAL';
+        comodo: 'COZINHA' | 'QUARTO' | 'SALA' | 'BANHEIRO' | 'AREA_DE_SERVICO' | 'COPA' | 'QUINTAL' | 'JARDIM' | 'GARAGEM' | 'OUTROS';
+        fotoBase64?: string;
+    }
+
+    const onFinish = async (values: ItemCasaFormValues) => {
         try {
+            setLoading(true);
 
-            setLoading
+            // Pega o valor da foto que está no estado do form
+            const fotoBase64 = form.getFieldValue('fotoBase64');
 
-            if(isEdicao) {
-                await itemCasaService.atualizar(id!, values);
+            const payload = {
+                ...values,
+                fotoBase64: fotoBase64
+            };
+
+            if (isEdicao) {
+                await itemCasaService.atualizar(id!, payload);
                 message.success("Item atualizado com sucesso!");
             } else {
-                await itemCasaService.criar(values);
+                await itemCasaService.criar(payload);
                 message.success("Item criado com sucesso!");
             }
-
             navigate("/itens");
-
         } catch (error) {
-            message.error("Erro ao salvar item:");
+            message.error("Erro ao salvar item");
         } finally {
             setLoading(false);
         }
     };
-            
+
     return (
         <div style={{ maxWidth: 600, margin: '0 auto' }}>
 
@@ -125,10 +140,8 @@ const ItemCasaForm = () => {
                             precision define 2 casas decimais */}
                         <InputNumber
                             style={{ width: '100%' }}
-                            min={0.01}
-                            precision={2}
-                            placeholder="0,00"
-                            prefix="R$"
+                            formatter={value => `R$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                            parser={value => value!.replace(/\R\$\s?|(,*)/g, '')}
                         />
                     </Form.Item>
 
@@ -183,6 +196,13 @@ const ItemCasaForm = () => {
                                 Cancelar
                             </Button>
                         </Space>
+                    </Form.Item>
+
+                    <Form.Item name="fotoBase64">
+                        <ImageCapture
+                            value={form.getFieldValue('fotoBase64')}
+                            onChange={(val) => form.setFieldsValue({ fotoBase64: val })}
+                        />
                     </Form.Item>
 
                 </Form>

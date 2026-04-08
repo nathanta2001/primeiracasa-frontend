@@ -23,16 +23,12 @@ export const produtoService = {
         return data;
     },
 
-        atualizarFoto: async (id: string, fotoBase64: string): Promise<Produto> => {
-        await api.patch(`/produtos/${id}/foto`, { foto: fotoBase64 }, {
-            headers: {
-                'Content-Type': 'text/plain'
-            }
-        });
+    atualizarFoto: async (id: string, fotoBase64: string): Promise<Produto> => {
+        await api.patch(`/produtos/${id}/foto`, { foto: fotoBase64 }); 
         const { data } = await api.get<Produto>(`/produtos/${id}`);
         return data;
-
     },
+
 
     deletar: async (id: string): Promise<void> => {
         await api.delete(`/produtos/${id}`);

@@ -1,37 +1,50 @@
 import { useEffect, useState } from "react";
 import {
-    Card, Row, Col, Button, Tag, Typography, Spin, Select,
-    Input, Space, Popconfirm, message, Empty
+    Card, Row, Col, Button, Typography, Select,
+    Input, message, Empty,
+    Form, Modal, InputNumber, Space
 } from "antd";
-import { 
-    DeleteOutlined, EditOutlined, PlusOutlined, 
-    FilterOutlined 
-} from "@ant-design/icons";
-import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { itemCasaService } from '../services/itemCasaService';
 import type { ItemCasa, ItemCasaFiltros } from "../types/ItemCasa";
 import { TIPOS_ITEM, COMODOS_ITEM, NECESSIDADES_ITEM } from "../types/ItemCasa";
+import { PageHeader } from "../components/PageHeader";
+import { ItemCard } from "../components/ItemCard";
+import { FilterOutlined } from "@ant-design/icons";
+import { ImageCapture } from '../components/ImageCapture';
+import { compressImage } from "../utils/imageUtils";
 
 
 
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 const { Option } = Select;
 
 const ItensCasa = () => {
-    
-    const  navigate = useNavigate();
+
+    const [form] = Form.useForm();
 
     const [itensCasa, setItensCasa] = useState<ItemCasa[]>([]);
     const [loading, setLoading] = useState(true);
     const [filtros, setFiltros] = useState<ItemCasaFiltros>({});
 
     const [mostrarFiltros, setMostrarFiltros] = useState(false);
+    const [modalAberto, setModalAberto] = useState(false);
+    const [itemSelecionado, setItemSelecionado] = useState<ItemCasa | null>(null);
 
     useEffect(() => {
         carregarItensCasa();
     }, [filtros]);
+
+    const location = useLocation();
+
+    useEffect(() => {
+        if (location.state?.openEditModalId && itensCasa.length > 0) {
+            abrirModal(location.state.openEditModalId);
+            window.history.replaceState({}, document.title);
+        }
+    }, [location.state, itensCasa]);
 
     const carregarItensCasa = async () => {
 
@@ -56,6 +69,12 @@ const ItensCasa = () => {
     const handleDeletar = async (id: string) => {
         try {
             await itemCasaService.deletar(id);
+
+            // vibra por 200ms
+            if ("vibrate" in navigator) {
+                navigator.vibrate(200);
+            }
+
             message.success("Item removido.");
             carregarItensCasa();
         } catch (error) {
@@ -74,56 +93,80 @@ const ItensCasa = () => {
         setFiltros({});
     }
 
-    const corNecessidade = (necessidade: string) => {
-        const cores: Record<string, string> = {
-            "ESSENCIAL": "red",
-            "DESEJAVEL": "yellow",
-            "OPCIONAL": "blue"
-        };
-
-
-        return cores[necessidade] || "default";
+    const abrirModal = (id?: string) => {
+        if (id) {
+            const item = itensCasa.find(i => i.id === id);
+            setItemSelecionado(item || null);
+            form.setFieldsValue(item);
+        } else {
+            setItemSelecionado(null);
+            form.resetFields();
+        }
+        setModalAberto(true);
     };
 
-    const corTipo = (tipo: string) => {
-        const cores: Record<string, string> = {
-            "MOBILIA": "brown",
-            "UTENSILIO": "blue",
-            "ELETRODOMESTICO": "gray",
-            "ELETRONICO": "white"
-        };
-        return cores[tipo] || "default";
+    const onFinish = async (values: any) => {
+        try {
+            setLoading(true);
+
+            // Garante que a foto saia do estado do Form para o payload
+            const fotoDoForm = form.getFieldValue('fotoBase64');
+
+            let fotoParaEnviar = fotoDoForm || values.fotoBase64;
+
+            // Compressão para evitar lentidão e erros de payload grande
+            if (fotoParaEnviar && fotoParaEnviar.startsWith('data:image')) {
+                fotoParaEnviar = await compressImage(fotoParaEnviar, 600);
+            }
+
+            const payload = {
+                ...values,
+                fotoBase64: fotoParaEnviar
+            };
+
+            if (itemSelecionado) {
+                await itemCasaService.atualizar(itemSelecionado.id, payload);
+                message.success("Atualizado com sucesso!");
+            } else {
+                await itemCasaService.criar(payload);
+                message.success("Criado com sucesso!");
+            }
+
+            // Limpeza completa após sucesso
+            setModalAberto(false);
+            form.resetFields(); // Limpa inclusive o campo invisível da foto
+            carregarItensCasa();
+        } catch (error) {
+            message.error("Erro ao salvar.");
+        } finally {
+            setLoading(false);
+        }
     };
+
 
     return (
         <div>
-            {/* Cabeçalho */}
-            <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-                <Col>
-                    <Title level={2} style={{ margin: 0 }}>
-                        Minha Casa
-                    </Title>
-                </Col>
-                <Col>
-                    {/* botões com espaçamento automático */}
+            <PageHeader
+                title="Minha Casa"
+                buttonText="Novo Item"
+                extra={
                     <Space>
                         <Button
                             icon={<FilterOutlined />}
-                            // mostrar e esconder os filtros
-                            onClick={() => setMostrarFiltros(prev => !prev)}
+                            onClick={() => setMostrarFiltros(!mostrarFiltros)}
+                            type={mostrarFiltros ? 'primary' : 'default'}
                         >
                             Filtros
                         </Button>
                         <Button
                             type="primary"
-                            icon={<PlusOutlined />}
-                            onClick={() => navigate('/itens/novo')}
+                            onClick={() => abrirModal()}
                         >
                             Novo Item
                         </Button>
                     </Space>
-                </Col>
-            </Row>
+                }
+            />
 
             {mostrarFiltros && (
                 <Card style={{ marginBottom: 16 }}>
@@ -232,77 +275,90 @@ const ItensCasa = () => {
                 {itensCasa.length} {itensCasa.length === 1 ? 'item encontrado' : 'itens encontrados'}
             </Text>
 
+
             {/* Spinner de loading */}
+            {/* Listagem de Itens */}
             {loading ? (
-                <div style={{ display: 'flex', justifyContent: 'center', marginTop: 100 }}>
-                    <Spin size="large" />
-                </div>
-
+                <Row gutter={[16, 16]}>
+                    {[1, 2, 3, 4].map(i => (
+                        <Col key={i} xs={24} sm={12} md={8} lg={6}>
+                            <ItemCard loading={true} />
+                        </Col>
+                    ))}
+                </Row>
             ) : itensCasa.length === 0 ? (
-                <Empty
-                    description="Nenhum item encontrado"
-                    style={{ marginTop: 60 }}
-                >
-                    <Button type="primary" onClick={() => navigate('/itens/novo')}>
-                        Adicionar primeiro item
-                    </Button>
-                </Empty>
-
+                <Empty description="Nenhum item encontrado" />
             ) : (
-                /* Grid de cards — um por item */
                 <Row gutter={[16, 16]}>
                     {itensCasa.map(item => (
                         <Col key={item.id} xs={24} sm={12} md={8} lg={6}>
-                            <Card
-                                /* actions são os botões no rodapé do card */
-                                actions={[
-                                    /* Botão de editar */
-                                    <EditOutlined
-                                        key="editar"
-                                        onClick={() => navigate(`/itens/${item.id}`)}
-                                    />,
-
-                                    /* Popconfirm pede confirmação antes de deletar */
-                                    <Popconfirm
-                                        key="deletar"
-                                        title="Remover item?"
-                                        description="Essa ação não pode ser desfeita."
-                                        onConfirm={() => handleDeletar(item.id)}
-                                        okText="Sim"
-                                        cancelText="Não"
-                                    >
-                                        <DeleteOutlined style={{ color: 'red' }} />
-                                    </Popconfirm>
-                                ]}
-                            >
-                                {/* Cabeçalho do card com tags */}
-                                <Space wrap style={{ marginBottom: 8 }}>
-                                    <Tag color={corTipo(item.tipo)}>{item.tipo}</Tag>
-                                    <Tag color={corNecessidade(item.necessidade)}>
-                                        {item.necessidade}
-                                    </Tag>
-                                </Space>
-
-                                {/* Nome e informações do item */}
-                                <Card.Meta
-                                    title={item.nome}
-                                    description={
-                                        <Space direction="vertical" size={2}>
-                                            <Text type="secondary">{item.comodo}</Text>
-                                            <Text strong style={{ fontSize: 16 }}>
-                                                R$ {item.preco.toFixed(2)}
-                                            </Text>
-                                        </Space>
-                                    }
-                                />
-                            </Card>
+                            <ItemCard
+                                item={item}
+                                onEdit={(id) => abrirModal(id)} // Agora abre o modal em vez de navegar
+                                onDelete={handleDeletar}
+                            />
                         </Col>
                     ))}
                 </Row>
             )}
+
+            {/* Modal de Cadastro/Edição */}
+            <Modal
+                title={itemSelecionado ? "Editar Item" : "Novo Item"}
+                open={modalAberto}
+                onCancel={() => setModalAberto(false)}
+                footer={null}
+                destroyOnHidden
+            >
+                <Form form={form} layout="vertical" onFinish={onFinish}>
+                    <Form.Item name="nome" label="Nome" rules={[{ required: true, message: 'Informe o nome' }]}>
+                        <Input />
+                    </Form.Item>
+
+                    <Row gutter={16}>
+                        <Col span={12}>
+                            <Form.Item name="preco" label="Preço" rules={[{ required: true, message: 'Informe o preço' }]}>
+                                <InputNumber style={{ width: '100%' }} prefix="R$" min={0.01} />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item name="tipo" label="Tipo" rules={[{ required: true }]}>
+                                <Select>
+                                    {TIPOS_ITEM.map(t => <Option key={t} value={t}>{t}</Option>)}
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                    </Row>
+
+                    <Form.Item name="comodo" label="Cômodo" rules={[{ required: true }]}>
+                        <Select>
+                            {COMODOS_ITEM.map(c => <Option key={c} value={c}>{c}</Option>)}
+                        </Select>
+                    </Form.Item>
+
+                    <Form.Item name="necessidade" label="Necessidade" rules={[{ required: true }]}>
+                        <Select>
+                            {NECESSIDADES_ITEM.map(n => <Option key={n} value={n}>{n}</Option>)}
+                        </Select>
+                    </Form.Item>
+
+                    <Form.Item name="fotoBase64" label="Foto do Item">
+                        <ImageCapture
+                            value={form.getFieldValue('fotoBase64')}
+                            onChange={(val) => form.setFieldsValue({ fotoBase64: val })}
+                        />
+                    </Form.Item>
+
+                    <Form.Item>
+                        <Button type="primary" htmlType="submit" block loading={loading}>
+                            Salvar
+                        </Button>
+                    </Form.Item>
+                </Form>
+            </Modal>
         </div>
     );
-};
+}
 
 
 export default ItensCasa;
