@@ -5,7 +5,7 @@ interface StatusTagProps {
   value: string;
 }
 
-export const StatusTag = ({ type, value }: StatusTagProps) => {
+export const StatusTag = ({ type: _type, value }: StatusTagProps) => {
   const colorMap: Record<string, string> = {
     // Necessidades
     ESSENCIAL: "red", DESEJAVEL: "yellow", OPCIONAL: "blue",
