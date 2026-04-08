@@ -6,7 +6,7 @@ import {
     Row,
     Col,
 } from 'antd';
-import { ArrowLeftOutlined, PlusOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, PlusOutlined, ShareAltOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { listaService } from '../services/listaService';
 import { produtoService } from '../services/produtoService';
@@ -15,6 +15,7 @@ import { type Produto, type ProdutoRequest } from '../types/Produto';
 import { CATEGORIA_PRODUTO, STATUS_PRODUTO } from '../types/Produto';
 import { ImageCapture } from '../components/ImageCapture';
 import { ProdutoCard } from '../components/ProdutoCard';
+import { compressImage } from '../utils/imageUtils';
 
 
 const { Title, Text } = Typography;
@@ -59,46 +60,41 @@ const ListaDetalhe = () => {
         }
     };
 
+
     const onFinish = async (values: Omit<ProdutoRequest, 'idLista'>) => {
         try {
             setLoadingSalvar(true);
 
+            const fotoFinal = form.getFieldValue('fotoBase64') || values.fotoBase64;
+            let fotoProcessada = values.fotoBase64;
+
+            if (fotoProcessada && fotoProcessada.startsWith('data:image')) {
+                fotoProcessada = await compressImage(fotoProcessada, 600); // Reduz para 600px de largura
+            }
+            const payload = { ...values, idLista: id!, fotoBase64: fotoFinal };
+
             if (produtoSelecionado) {
-                // Modo Edição
-                await produtoService.atualizar(produtoSelecionado.id, { ...values, idLista: id! });
-                if (Notification.permission === 'granted') {
-                    navigator.serviceWorker.ready.then((registration) => {
-                        registration.showNotification("🛒 Produto Adicionado", {
-                            body: `${values.nome} foi salvo na lista ${lista?.nome}.`,
-                            icon: '/icon-192x192.png',
-                            badge: '/favicon.ico',
-                            vibrate: [200, 100, 200], 
-                            tag: 'novo-produto',
-                            renotify: true
-                        } as any);
-                    });
-                }
+                await produtoService.atualizar(produtoSelecionado.id, payload);
                 message.success('Produto atualizado!');
             } else {
-                // Modo Criação
-                await produtoService.criar({ ...values, idLista: id! });
+                await produtoService.criar(payload);
                 message.success('Produto adicionado!');
+
+                // Notificação apenas na criação para não spammar o usuário
                 if (Notification.permission === 'granted') {
                     navigator.serviceWorker.ready.then((registration) => {
-                        registration.showNotification("🛒 Produto Adicionado", {
-                            body: `${values.nome} foi salvo na lista ${lista?.nome}.`,
+                        registration.showNotification("🛒 Novo Item", {
+                            body: `${values.nome} foi adicionado à lista.`,
                             icon: '/icon-192x192.png',
-                            badge: '/favicon.ico',
-                            vibrate: [200, 100, 200], 
-                            tag: 'novo-produto',
-                            renotify: true
+                            vibrate: [200, 100, 200],
+                            tag: 'novo-produto'
                         } as any);
                     });
                 }
             }
 
             form.resetFields();
-            setProdutoSelecionado(null); // Limpa a seleção após salvar
+            setProdutoSelecionado(null);
             setModalAberto(false);
             carregarDados();
         } catch (error) {
@@ -107,7 +103,6 @@ const ListaDetalhe = () => {
             setLoadingSalvar(false);
         }
     };
-
     const handleDeletar = async (produtoId: string) => {
         try {
             await produtoService.deletar(produtoId);
@@ -136,19 +131,21 @@ const ListaDetalhe = () => {
     };
 
 
-    // // precisa de um botão pra isso aq tbm
-    // const handleUploadFoto = async (arquivo: File) => {
-    //     if (!arquivo) return;
-
-    //     // Convertendo para Base64 para salvar no banco
-    //     const reader = new FileReader();
-    //     reader.readAsDataURL(arquivo);
-    //     reader.onload = () => {
-    //         const base64 = reader.result;
-    //         //produtoService.salvarFoto(id!, base64 as string);
-    //         console.log("Foto pronta para o Java:", base64);
-    //     };
-    //     };
+    const handleCompartilhar = async () => {
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: `Lista de Compras: ${lista?.nome}`,
+                    text: `Confira os itens da lista ${lista?.nome} no meu app Minha Primeira Casa!`,
+                    url: window.location.href,
+                });
+            } catch (error) {
+                console.log('Erro ao compartilhar', error);
+            }
+        } else {
+            message.info("Compartilhamento não suportado neste navegador.");
+        }
+    };
 
 
     if (loading) {
@@ -173,6 +170,11 @@ const ListaDetalhe = () => {
                         <Title level={2} style={{ margin: 0 }}>
                             {lista?.nome}
                         </Title>
+                        <Button
+                            icon={<ShareAltOutlined />}
+                            onClick={handleCompartilhar}
+                            type="text"
+                        />
                     </Space>
                 </Col>
                 <Col>
@@ -289,11 +291,21 @@ const ListaDetalhe = () => {
                         </Space>
                     </Form.Item>
 
-                    <Form.Item label="Foto do Produto">
-                        <ImageCapture
-                            value={form.getFieldValue('fotoBase64')}
-                            onChange={(val) => form.setFieldsValue({ fotoBase64: val })}
-                        />
+                    <Form.Item
+                        noStyle 
+                        shouldUpdate={(prevValues, currentValues) => prevValues.fotoBase64 !== currentValues.fotoBase64}
+                    >
+                        {({ getFieldValue }) => (
+                            <Form.Item
+                                name="fotoBase64"
+                                label="Foto do Produto"
+                            >
+                                <ImageCapture
+                                    value={getFieldValue('fotoBase64')}
+                                    onChange={(val) => form.setFieldsValue({ fotoBase64: val })}
+                                />
+                            </Form.Item>
+                        )}
                     </Form.Item>
 
                 </Form>

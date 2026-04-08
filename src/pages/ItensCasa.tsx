@@ -12,11 +12,12 @@ import { PageHeader } from "../components/PageHeader";
 import { ItemCard } from "../components/ItemCard";
 import { FilterOutlined } from "@ant-design/icons";
 import { ImageCapture } from '../components/ImageCapture';
+import { compressImage } from "../utils/imageUtils";
 
 
 
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 const { Option } = Select;
 
@@ -107,17 +108,36 @@ const ItensCasa = () => {
     const onFinish = async (values: any) => {
         try {
             setLoading(true);
-            if (itemSelecionado) {
-                await itemCasaService.atualizar(itemSelecionado.id, values);
-                message.success("Item atualizado!");
-            } else {
-                await itemCasaService.criar(values);
-                message.success("Item criado!");
+
+            // Garante que a foto saia do estado do Form para o payload
+            const fotoDoForm = form.getFieldValue('fotoBase64');
+
+            let fotoParaEnviar = fotoDoForm || values.fotoBase64;
+
+            // Compressão para evitar lentidão e erros de payload grande
+            if (fotoParaEnviar && fotoParaEnviar.startsWith('data:image')) {
+                fotoParaEnviar = await compressImage(fotoParaEnviar, 600);
             }
+
+            const payload = {
+                ...values,
+                fotoBase64: fotoParaEnviar
+            };
+
+            if (itemSelecionado) {
+                await itemCasaService.atualizar(itemSelecionado.id, payload);
+                message.success("Atualizado com sucesso!");
+            } else {
+                await itemCasaService.criar(payload);
+                message.success("Criado com sucesso!");
+            }
+
+            // Limpeza completa após sucesso
             setModalAberto(false);
+            form.resetFields(); // Limpa inclusive o campo invisível da foto
             carregarItensCasa();
         } catch (error) {
-            message.error("Erro ao salvar item.");
+            message.error("Erro ao salvar.");
         } finally {
             setLoading(false);
         }
@@ -288,7 +308,7 @@ const ItensCasa = () => {
                 open={modalAberto}
                 onCancel={() => setModalAberto(false)}
                 footer={null}
-                destroyOnClose
+                destroyOnHidden
             >
                 <Form form={form} layout="vertical" onFinish={onFinish}>
                     <Form.Item name="nome" label="Nome" rules={[{ required: true, message: 'Informe o nome' }]}>

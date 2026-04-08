@@ -1,5 +1,6 @@
 import { Button, Image, Space } from 'antd';
 import { CameraOutlined } from '@ant-design/icons';
+import { normalizeImageSrc } from '../utils/imageUtils';
 
 interface ImageCaptureProps {
   value?: string;
@@ -8,6 +9,8 @@ interface ImageCaptureProps {
 
 
 export const ImageCapture = ({ value, onChange }: ImageCaptureProps) => {
+  const imageSrc = normalizeImageSrc(value);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -18,8 +21,8 @@ export const ImageCapture = ({ value, onChange }: ImageCaptureProps) => {
   };
 
   return (
-    <Space direction="vertical" style={{ width: '100%', alignItems: 'center' }}>
-      {value && <Image src={value} width={200} style={{ borderRadius: 8 }} />}
+    <Space orientation="vertical" style={{ width: '100%', alignItems: 'center' }}>
+      {imageSrc && <Image src={imageSrc} width={200} style={{ borderRadius: 8 }} />}
       <Button icon={<CameraOutlined />} onClick={() => document.getElementById('camera-input')?.click()}>
         {value ? 'Alterar Foto' : 'Tirar Foto'}
       </Button>

@@ -5,6 +5,8 @@ import App from './App.tsx'
 import { ConfigProvider } from "antd";
 import { registerSW } from 'virtual:pwa-register';
 
+
+
 registerSW({ immediate: true });
 
 createRoot(document.getElementById('root') as HTMLElement).render(
@@ -24,17 +26,13 @@ createRoot(document.getElementById('root') as HTMLElement).render(
 
 // Service Worker registration
 if ('serviceWorker' in navigator) {
-  // Check if browser supports Service Worker
   window.addEventListener('load', () => {
-    // Execute after page is fully loaded
-    navigator.serviceWorker.register('/sw.js')
+    navigator.serviceWorker.register('/sw.js', { scope: '/' })
       .then(registration => {
-        console.log('SW registered: ', registration);
-        // Registration successful
+        console.log('SW registrado com sucesso:', registration.scope);
       })
-      .catch(registrationError => {
-        console.log('SW registration failed: ', registrationError);
-        // Registration failed
+      .catch(error => {
+        console.error('Falha ao registrar o SW:', error);
       });
   });
 }

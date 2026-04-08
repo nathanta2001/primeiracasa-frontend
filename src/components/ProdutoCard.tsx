@@ -2,6 +2,7 @@ import { Card, List, Space, Image, Button, Popconfirm } from 'antd';
 import { EditOutlined, DeleteOutlined, ShoppingOutlined } from '@ant-design/icons';
 import { StatusTag } from './StatusTag';
 import { type Produto } from '../types/Produto';
+import { normalizeImageSrc } from '../utils/imageUtils';
 
 interface ProdutoCardProps {
   produto?: Produto;
@@ -11,6 +12,8 @@ interface ProdutoCardProps {
 }
 
 export const ProdutoCard = ({ produto, loading, onEdit, onDelete }: ProdutoCardProps) => {
+  const imageSrc = normalizeImageSrc(produto?.fotoBase64);
+
   return (
     <List.Item
       actions={!loading ? [
@@ -25,8 +28,8 @@ export const ProdutoCard = ({ produto, loading, onEdit, onDelete }: ProdutoCardP
       ) : (
         <List.Item.Meta
           avatar={
-            produto?.fotoBase64 ? (
-              <Image src={produto.fotoBase64} width={50} height={50} style={{ borderRadius: 8, objectFit: 'cover' }} />
+            imageSrc ? (
+              <Image src={imageSrc} width={50} height={50} style={{ borderRadius: 8, objectFit: 'cover' }} />
             ) : (
               <div style={{ width: 50, height: 50, backgroundColor: '#f5f5f5', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <ShoppingOutlined style={{ color: '#ccc' }} />

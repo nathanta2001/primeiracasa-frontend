@@ -23,7 +23,7 @@ const Home = () => {
             const data = await itemCasaService.listarTodos();
             setItens(data);
         } catch (error) {
-            console.error('Erro ao carregar itens:', error);
+            message.error('Erro ao carregar itens:');
         } finally {
             setLoading(false);
         }

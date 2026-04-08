@@ -16,3 +16,23 @@ export const compressImage = (base64Str: string, maxWidth = 800): Promise<string
     };
   });
 };
+
+export const normalizeImageSrc = (value?: string | null): string | undefined => {
+  if (!value) {
+    return undefined;
+  }
+
+  const normalizedValue = value.trim();
+
+  if (
+    normalizedValue.startsWith('data:') ||
+    normalizedValue.startsWith('http://') ||
+    normalizedValue.startsWith('https://') ||
+    normalizedValue.startsWith('blob:') ||
+    normalizedValue.startsWith('/')
+  ) {
+    return normalizedValue;
+  }
+
+  return `data:image/jpeg;base64,${normalizedValue}`;
+};

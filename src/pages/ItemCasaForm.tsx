@@ -43,30 +43,44 @@ const ItemCasaForm = () => {
             });
 
         } catch (error) {
-            console.error("Erro ao carregar item:", error);
+            message.error("Erro ao carregar item:");
             navigate("/itens");
         } finally {
             setLoadingDados(false);
         }
     };
 
-    const onFinish = async (values: any) => {
-        try {
+    interface ItemCasaFormValues {
+        nome: string;
+        preco: number;
+        tipo: 'MOBILIA' | 'UTENSILIO' | 'ELETRODOMESTICO' | 'ELETRONICO';
+        necessidade: 'ESSENCIAL' | 'DESEJAVEL' | 'OPCIONAL';
+        comodo: 'COZINHA' | 'QUARTO' | 'SALA' | 'BANHEIRO' | 'AREA_DE_SERVICO' | 'COPA' | 'QUINTAL' | 'JARDIM' | 'GARAGEM' | 'OUTROS';
+        fotoBase64?: string;
+    }
 
-            setLoading
+    const onFinish = async (values: ItemCasaFormValues) => {
+        try {
+            setLoading(true);
+
+            // Pega o valor da foto que está no estado do form
+            const fotoBase64 = form.getFieldValue('fotoBase64');
+
+            const payload = {
+                ...values,
+                fotoBase64: fotoBase64
+            };
 
             if (isEdicao) {
-                await itemCasaService.atualizar(id!, values);
+                await itemCasaService.atualizar(id!, payload);
                 message.success("Item atualizado com sucesso!");
             } else {
-                await itemCasaService.criar(values);
+                await itemCasaService.criar(payload);
                 message.success("Item criado com sucesso!");
             }
-
             navigate("/itens");
-
         } catch (error) {
-            message.error("Erro ao salvar item:");
+            message.error("Erro ao salvar item");
         } finally {
             setLoading(false);
         }
