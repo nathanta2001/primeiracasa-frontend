@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://primeiracasa-backend.onrender.com",
+  baseURL: "https://primeiracasa-backend.onrender.com/api",
 });
 
 // Adiciona o token em cada chamada da API
