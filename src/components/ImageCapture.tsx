@@ -31,6 +31,9 @@ export const ImageCapture = ({ value, onChange }: ImageCaptureProps) => {
       <Button icon={<CameraOutlined />} onClick={() => document.getElementById('camera-input')?.click()}>
         {value ? 'Alterar Foto' : 'Tirar Foto'}
       </Button>
+      <Button onClick={() => document.getElementById('gallery-input')?.click()}>
+        Escolher da Galeria
+      </Button>
       <input
         type="file"
         accept="image/*"
