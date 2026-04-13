@@ -73,6 +73,8 @@ const Listas = () => {
                 message.success('Lista criada!');
             }
 
+            if ("vibrate" in navigator) navigator.vibrate(200);
+
             fecharModal();
             carregarListas();
         } catch (error) {

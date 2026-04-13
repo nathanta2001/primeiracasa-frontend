@@ -1,3 +1,4 @@
+// Página principal de listagem de itens da casa, com filtros e modais para criar/editar
 import { useEffect, useState } from "react";
 import {
     Card, Row, Col, Button, Typography, Select,
@@ -131,6 +132,18 @@ const ItensCasa = () => {
                 await itemCasaService.criar(payload);
                 message.success("Criado com sucesso!");
             }
+
+            if (Notification.permission === 'granted') {
+                navigator.serviceWorker.ready.then((registration) => {
+                    registration.showNotification("🏠 Novo Item na Casa", {
+                        body: `${values.nome} foi adicionado aos seus itens.`,
+                        icon: '/icon-192x192.png', 
+                        vibrate: [200, 100, 200],
+                        tag: 'novo-item-casa'
+                    } as any);
+                });
+            }
+            if ("vibrate" in navigator) navigator.vibrate(200);
 
             // Limpeza completa após sucesso
             setModalAberto(false);
