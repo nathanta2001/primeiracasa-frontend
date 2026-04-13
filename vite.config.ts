@@ -11,7 +11,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'], // Arquivos estáticos [cite: 84]
         runtimeCaching: [
           {
-            urlPattern: /^http:\/\/localhost:8080\/api\/.*$/, // API Java
+            urlPattern: /^https:\/\/primeiracasa-backend\.onrender\.com\/api\/.*$/, // API Java
             handler: 'NetworkFirst', // Prioriza rede, usa cache como fallback 
             options: {
               cacheName: 'api-cache',
