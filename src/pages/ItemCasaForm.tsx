@@ -1,4 +1,4 @@
-import { Button, Card, Form, Input, InputNumber, message, Select, Space, Typography } from "antd";
+import { Button, Card, Form, Input, InputNumber, message, notification, Select, Space, Typography } from "antd";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { itemCasaService } from "../services/itemCasaService";
@@ -73,14 +73,19 @@ const ItemCasaForm = () => {
 
             if (isEdicao) {
                 await itemCasaService.atualizar(id!, payload);
-                message.success("Item atualizado com sucesso!");
+                notification.success({ message: "Item atualizado com sucesso!" });
             } else {
                 await itemCasaService.criar(payload);
-                message.success("Item criado com sucesso!");
+                notification.success({ message: "Item criado com sucesso!" });
             }
+
+            if ('vibrate' in navigator) {
+                navigator.vibrate(200);
+            }
+
             navigate("/itens");
         } catch (error) {
-            message.error("Erro ao salvar item");
+            notification.error({ message: "Erro ao salvar item" });
         } finally {
             setLoading(false);
         }

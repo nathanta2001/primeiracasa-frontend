@@ -30,7 +30,6 @@ export const ImageCapture = ({ value, onChange }: ImageCaptureProps) => {
         id="camera-input"
         type="file"
         accept="image/*"
-        capture="environment"
         style={{ display: 'none' }}
         onChange={handleFileChange}
       />
