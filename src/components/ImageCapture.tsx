@@ -27,11 +27,11 @@ export const ImageCapture = ({ value, onChange }: ImageCaptureProps) => {
         {value ? 'Alterar Foto' : 'Tirar Foto'}
       </Button>
       <input
-        id="camera-input"
         type="file"
         accept="image/*"
         style={{ display: 'none' }}
         onChange={handleFileChange}
+        id="upload-input-v2"
       />
     </Space>
   );
