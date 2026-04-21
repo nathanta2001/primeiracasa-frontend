@@ -2,6 +2,7 @@ import { Form, Input, Button, Card, Typography, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import api from '../services/api';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const { Title } = Typography;
 
@@ -9,20 +10,21 @@ const Login = () => {
 
 
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
     const onFinish = async (values: any) => {
         setLoading(true);
         try {
             const response = await api.post('/login', values);
-            localStorage.setItem('token', response.data.token);
-            message.success('Bem-vindo de volta!');
+            const { token } = response.data;
 
-            // Redireciona e força a atualização do estado das rotas
-            window.location.href = '/home';
+            if (token) {
+                localStorage.setItem('token', token);
+                message.success('Login realizado com sucesso!');
+                navigate('/'); // Vai para a Home
+            }
         } catch (error) {
-            message.error('Usuário ou senha inválidos');
-        } finally {
-            setLoading(false);
+            message.error('Email ou senha inválidos');
         }
     };
 

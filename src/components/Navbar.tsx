@@ -11,7 +11,7 @@ const Navbar = () => {
 
     const handleLogout = () => {
         localStorage.removeItem('token');
-        window.location.href = '/login';
+        navigate('/login');
     };
 
     const itens = [
@@ -41,6 +41,8 @@ const Navbar = () => {
             onClick: handleLogout
         }
     ]
+
+
 
     return (
         <div style={{ display: 'flex', alignItems: 'center', background: '#001529', paddingRight: '20px' }}>

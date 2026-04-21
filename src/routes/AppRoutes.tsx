@@ -8,31 +8,47 @@ import Listas from '../pages/Listas';
 import Navbar from '../components/Navbar';
 import Offline from '../components/Offline';
 import Login from '../pages/Login';
+import Register from '../pages/Register';
+import { type JSX } from 'react';
 
 const { Content } = Layout;
 
+const PrivateRoute = ({ children }: { children: JSX.Element }) => {
+    const token = localStorage.getItem('token');
+    return token ? children : <Navigate to="/login" replace />;
+}
+
 const AppRoutes = () => {
 
-    const token = localStorage.getItem('token');
+    const isAuthenticated = !!localStorage.getItem('token');
 
     return (
         <BrowserRouter>
             <Layout style={{ minHeight: '100vh' }}>
                 <Offline />
-                {token && <Navbar />}
+                
+                {/* Navbar só aparece se houver token */}
+                {isAuthenticated && <Navbar />}
+
                 <Content style={{ padding: '24px' }}>
                     <Routes>
+                        {/* Rotas Públicas */}
                         <Route path="/login" element={<Login />} />
+                        <Route path="/register" element={<Register />} />
 
                         {/* Rotas Protegidas */}
-                        <Route path="/home" element={token ? <Home /> : <Navigate to="/login" />} />
-                        <Route path="/itens" element={token ? <ItensCasa /> : <Navigate to="/login" />} />
-                        <Route path="/listas" element={token ? <Listas /> : <Navigate to="/login" />} />
-                        <Route path="/listas/:id" element={token ? <ListaDetalhe /> : <Navigate to="/login" />} />
-                        <Route path="/itens/novo" element={token ? <ItemCasaForm /> : <Navigate to="/login" />} />
-                        <Route path="/itens/:id" element={token ? <ItemCasaForm /> : <Navigate to="/login" />} />
+                        <Route path="/home" element={<PrivateRoute><Home /></PrivateRoute>} />
+                        <Route path="/itens" element={<PrivateRoute><ItensCasa /></PrivateRoute>} />
+                        <Route path="/listas" element={<PrivateRoute><Listas /></PrivateRoute>} />
+                        <Route path="/listas/:id" element={<PrivateRoute><ListaDetalhe /></PrivateRoute>} />
+                        <Route path="/itens/novo" element={<PrivateRoute><ItemCasaForm /></PrivateRoute>} />
+                        <Route path="/itens/:id" element={<PrivateRoute><ItemCasaForm /></PrivateRoute>} />
                    
-                        <Route path="/" element={<Navigate to={token ? "/home" : "/login"} />} />
+                        {/* Redirecionamento Inicial */}
+                        <Route path="/" element={<Navigate to={isAuthenticated ? "/home" : "/login"} replace />} />
+                        
+                        {/* Catch-all: qualquer rota desconhecida manda para o home ou login */}
+                        <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
                 </Content>
             </Layout>
