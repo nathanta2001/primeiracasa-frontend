@@ -2,7 +2,7 @@ import { Form, Input, Button, Card, Typography, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import api from '../services/api';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const { Title } = Typography;
 
@@ -21,7 +21,7 @@ const Login = () => {
             if (token) {
                 localStorage.setItem('token', token);
                 message.success('Login realizado com sucesso!');
-                navigate('/'); // Vai para a Home
+                window.location.href = '/home';
             }
         } catch (error) {
             message.error('Email ou senha inválidos');
@@ -43,15 +43,15 @@ const Login = () => {
 
                 <Form
                     name="login_form"
-                    initialValues={{ username: 'admin', password: 'admin' }}
+                    initialValues={{ email: '', senha: '' }}
                     onFinish={onFinish}
                     layout="vertical"
                 >
                     <Form.Item
-                        name="username"
-                        rules={[{ required: true, message: 'Insira seu usuário!' }]}
+                        name="email"
+                        rules={[{ required: true, message: 'Insira seu email!' }]}
                     >
-                        <Input prefix={<UserOutlined />} placeholder="Usuário" size="large" />
+                        <Input prefix={<UserOutlined />} placeholder="Email" size="large" />
                     </Form.Item>
 
                     <Form.Item
@@ -77,6 +77,9 @@ const Login = () => {
                             Entrar
                         </Button>
                     </Form.Item>
+                    <div style={{ textAlign: 'center' }}>
+                        Não tem uma conta? <Link to="/register">Cadastre-se agora</Link>
+                    </div>
                 </Form>
             </Card>
         </div>
