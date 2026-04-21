@@ -2,7 +2,7 @@ import { Form, Input, Button, Card, Typography, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import api from '../services/api';
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const { Title } = Typography;
 
@@ -10,7 +10,6 @@ const Login = () => {
 
 
     const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
 
     const onFinish = async (values: any) => {
         setLoading(true);
